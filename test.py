@@ -19,7 +19,7 @@ headers = {
 def utc_to_time(naive, timezone="Asia/Kolkata"):
     return naive.replace(tzinfo=pytz.utc).astimezone(pytz.timezone(timezone))
 
-print()
+
 def codeforce_contest_scrapper():
     codeforce_contest_url = "https://codeforces.com/api/contest.list"
     res = requests.get(codeforce_contest_url,headers=headers)
@@ -32,9 +32,9 @@ def codeforce_contest_scrapper():
         if (data['phase'] != "BEFORE"):
             break
         cf_contest.append(data)
-    upcoming_cf_contest+="            ###############################\n"
-    upcoming_cf_contest+="            # Upcoming Codeforce Contests #\n"
-    upcoming_cf_contest+="            ###############################\n\n"
+    upcoming_cf_contest+="###############################\n"
+    upcoming_cf_contest+="# Upcoming Codeforce Contests #\n"
+    upcoming_cf_contest+="###############################\n\n"
     upcoming_cf_contest+="=========================================================\n"
 
 
@@ -65,9 +65,9 @@ def codechef_contest_scrapper():
     soup = BeautifulSoup(html, 'html.parser')
     all_cc_contests = json.loads(soup.text)
 
-    upcoming_cc_contests+="            ##############################\n"
-    upcoming_cc_contests+="            # Upcoming Codechef Contests #\n"
-    upcoming_cc_contests+="            ##############################\n\n"
+    upcoming_cc_contests+="##############################\n"
+    upcoming_cc_contests+="# Upcoming Codechef Contests #\n"
+    upcoming_cc_contests+="##############################\n\n"
     upcoming_cc_contests+="=========================================================\n"
     # print(all_cc_contests)
     for contest in all_cc_contests['present_contests']:
@@ -119,9 +119,9 @@ def leetcode_contest_scrapper():
     # print(top2contest)
     
     future_lc_contests = ""
-    future_lc_contests+="            ##############################\n"
-    future_lc_contests+="            # Upcoming Leetcode Contests #\n"
-    future_lc_contests+="            ##############################\n\n"
+    future_lc_contests+="##############################\n"
+    future_lc_contests+="# Upcoming Leetcode Contests #\n"
+    future_lc_contests+="##############################\n\n"
     future_lc_contests+="=========================================================\n"
     # future_lc_contests+="~~~~~~~~~~~~~~~~~~~~~~~~~~\n\n"
 
@@ -144,28 +144,32 @@ def leetcode_contest_scrapper():
 # print(codeforce_contest_scrapper())
 # print(codechef_contest_scrapper()['upcoming_cc_contests'])
 # print(leetcode_contest_scrapper())
+def sendmail():
+    email_sender = os.getenv("email_sender")
+    email_password = os.getenv("email_password")
+    email_receiver = os.getenv("email_receiver")
 
-email_sender = os.getenv("email_sender")
-email_password = os.getenv("email_password")
-email_receiver = os.getenv("email_receiver")
+    subject = 'Check out the Upcoming Codeforce contests'
+    body = f"{codeforce_contest_scrapper()}\n{codechef_contest_scrapper()['upcoming_cc_contests']}\n{leetcode_contest_scrapper()}"
 
-subject = 'Check out the Upcoming Codeforce contests'
-body = f"{codeforce_contest_scrapper()}\n{codechef_contest_scrapper()['upcoming_cc_contests']}\n{leetcode_contest_scrapper()}"
+    # print(body)
 
-# print(body)
+    # file2write=open("sample.txt",'w')
+    # file2write.write(body)
+    # file2write.close()
 
-# file2write=open("sample.txt",'w')
-# file2write.write(body)
-# file2write.close()
+    em = EmailMessage()
+    em['From'] = email_sender
+    em['To'] = email_receiver
+    em['Subject'] = subject
+    em.set_content(body)
 
-em = EmailMessage()
-em['From'] = email_sender
-em['To'] = email_receiver
-em['Subject'] = subject
-em.set_content(body)
+    context = ssl.create_default_context()
 
-context = ssl.create_default_context()
+    with smtplib.SMTP_SSL('smtp.gmail.com', 465, context=context) as smtp:
+        smtp.login(email_sender, email_password)
+        smtp.sendmail(email_sender, email_receiver, em.as_string())
 
-with smtplib.SMTP_SSL('smtp.gmail.com', 465, context=context) as smtp:
-    smtp.login(email_sender, email_password)
-    smtp.sendmail(email_sender, email_receiver, em.as_string())
+
+if __name__ == "__main__":
+    sendmail()
