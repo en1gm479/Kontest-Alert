@@ -26,4 +26,4 @@ jobs:
           email_sender: ${{ secrets.email_sender }}
           email_password: ${{ secrets.email_password }}
           email_receiver: ${{ secrets.email_receiver }}
-        run: python main.py
+        run: python test.py
