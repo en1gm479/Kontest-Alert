@@ -1,6 +1,7 @@
 name: run test.py
 
 on:
+  workflow_dispatch: {}
   schedule:
     - cron: '0 10 * * *' # At daily 10:00AM
 
