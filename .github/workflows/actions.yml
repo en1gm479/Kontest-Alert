@@ -1,0 +1,30 @@
+name: run test.py
+
+on:
+  workflow_dispatch: {}
+  schedule:
+    - cron: '0 10 * * *' # At daily 10:00AM
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout repo content
+        uses: actions/checkout@v2 # checkout the repository content
+
+      - name: setup python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.8' # install the python version needed
+
+      - name: install python packages
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: execute py script # run main.py
+        env:
+          email_sender: ${{ secrets.email_sender }}
+          email_password: ${{ secrets.email_password }}
+          email_receiver: ${{ secrets.email_receiver }}
+        run: python test.py
