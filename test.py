@@ -3,7 +3,7 @@ import json
 import requests
 from bs4 import BeautifulSoup, SoupStrainer
 import pytz
-from datetime import datetime
+from datetime import datetime, date
 import smtplib
 import ssl
 from email.message import EmailMessage
@@ -148,28 +148,31 @@ def sendmail():
     email_sender = os.getenv("email_sender")
     email_password = os.getenv("email_password")
     email_receiver = os.getenv("email_receiver")
-
+    email_ls = email_receiver.split(',');
+    # print(email_ls);
     subject = 'Check out the Upcoming Codeforce contests'
     body = f"{codeforce_contest_scrapper()}\n{codechef_contest_scrapper()['upcoming_cc_contests']}\n{leetcode_contest_scrapper()}"
-
+    body += f"\n\nGenerated on: {date.today()}\n"
     # print(body)
 
     # file2write=open("sample.txt",'w')
     # file2write.write(body)
     # file2write.close()
+    for em_receiver in email_ls:
+        print(f"Sending mail to: {em_receiver}\n")
+        em = EmailMessage()
+        em['From'] = email_sender
+        em['To'] = em_receiver
+        em['Subject'] = subject
+        em.set_content(body)
 
-    em = EmailMessage()
-    em['From'] = email_sender
-    em['To'] = email_receiver
-    em['Subject'] = subject
-    em.set_content(body)
+        context = ssl.create_default_context()
 
-    context = ssl.create_default_context()
-
-    with smtplib.SMTP_SSL('smtp.gmail.com', 465, context=context) as smtp:
-        smtp.login(email_sender, email_password)
-        smtp.sendmail(email_sender, email_receiver, em.as_string())
+        with smtplib.SMTP_SSL('smtp.gmail.com', 465, context=context) as smtp:
+            smtp.login(email_sender, email_password)
+            smtp.sendmail(email_sender, em_receiver, em.as_string())
 
 
 if __name__ == "__main__":
+
     sendmail()
